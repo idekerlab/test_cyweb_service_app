@@ -14,19 +14,19 @@ Dependencies
 Direct invocation
 ------------------
 
-Version `0.4.0` can be directly pulled from `Dockerhub <https://hub.docker.com/>`_ with this command:
+Version `0.1.0` can be directly pulled from `Dockerhub <https://hub.docker.com/>`_ with this command:
 
 .. code-block::
 
-   docker pull coleslawndex/cdiquerygenestoterm:0.4.0
+   docker pull coleslawndex/testcywebserviceapp:0.1.0
 
 Building
 --------
 
 .. code-block::
 
-   git clone https://github.com/idekerlab/cdiquerygenestoterm
-   cd cdiquerygenestoterm
+   git clone https://github.com/idekerlab/test_cyweb_service_app
+   cd test_cyweb_service_app
    make dockerbuild
 
 Run **make** command with no arguments to see other build/deploy options including creation of Docker image
@@ -62,7 +62,7 @@ Usage
 
 .. code-block::
 
-   docker run -v coleslawndex/cdiquerygenestoterm:0.4.0 -h
+   docker run -v coleslawndex/testcywebserviceapp:0.1.0 -h
 
 
 Credits

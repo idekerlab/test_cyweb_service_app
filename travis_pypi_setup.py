@@ -21,7 +21,7 @@ except:
     from urllib.request import urlopen
 
 
-GITHUB_REPO = 'idekerlab/cdiquerygenestoterm'
+GITHUB_REPO = 'idekerlab/test_cyweb_service_app'
 TRAVIS_CONFIG_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '.travis.yml')
 

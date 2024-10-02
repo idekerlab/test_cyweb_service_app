@@ -1,12 +1,12 @@
 FROM continuumio/miniconda3
 
 
-RUN mkdir /tmp/cdiquery
-COPY dist/*.whl /tmp/cdiquery/
+RUN mkdir /tmp/testcywebserviceapp
+COPY dist/*.whl /tmp/testcywebserviceapp/
 
-RUN pip install /tmp/cdiquery/cdiquerygenestoterm*whl
+RUN pip install /tmp/testcywebserviceapp/testcywebserviceapp*whl
 
-RUN rm -rf /tmp/cdiquery
+RUN rm -rf /tmp/testcywebserviceapp
 
-ENTRYPOINT ["/opt/conda/bin/cdiquerygenestotermcmd.py"]
+ENTRYPOINT ["/opt/conda/bin/testcywebserviceapp.py"]
 CMD ["--help"]

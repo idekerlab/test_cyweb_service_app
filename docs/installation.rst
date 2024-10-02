@@ -12,7 +12,7 @@ To install Community Detection iQuery Gene To Term Mapper, run this command in y
 
 .. code-block:: console
 
-    $ pip install cdiquerygenestoterm
+    $ pip install testcywebserviceapp
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
@@ -30,13 +30,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/idekerlab/cdiquerygenestoterm
+    $ git clone git://github.com/idekerlab/test_cyweb_service_app
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl  -OL https://github.com/idekerlab/cdiquerygenestoterm/tarball/master
+    $ curl  -OL https://github.com/idekerlab/test_cyweb_service_app/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -45,5 +45,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/idekerlab/cdiquerygenestoterm
-.. _tarball: https://github.com/idekerlab/cdiquerygenestoterm/tarball/master
+.. _Github repo: https://github.com/idekerlab/test_cyweb_service_app
+.. _tarball: https://github.com/idekerlab/test_cyweb_service_app/tarball/master

@@ -6,7 +6,8 @@ import argparse
 import json
 import requests
 import time
-import cdiquerygenestoterm
+
+import testcywebserviceapp
 
 SOURCES_KEY = 'sources'
 RESULTS_KEY = 'results'
@@ -206,7 +207,7 @@ def run_iquery(inputfile, theargs):
     if genes is None or (len(genes) == 1 and len(genes[0].strip()) == 0):
         sys.stderr.write('No genes found in input')
         return None
-    user_agent = 'cdiquerygenestoterm/' + cdiquerygenestoterm.__version__
+    user_agent = 'testcywebserviceapp/' + testcywebserviceapp.__version__
     resturl = theargs.url
 
     query = {'geneList': genes,

@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 
-with open(os.path.join('cdiquerygenestoterm', '__init__.py')) as ver_file:
+with open(os.path.join('testcywebserviceapp', '__init__.py')) as ver_file:
     for line in ver_file:
         if line.startswith('__version__'):
             version=re.sub("'", "", line[line.index("'"):])
@@ -28,23 +28,23 @@ test_requirements = [
 ]
 
 setup(
-    name='cdiquerygenestoterm',
+    name='testcywebserviceapp',
     version=version,
     description="Maps genes to terms",
     long_description=readme + '\n\n' + history,
-    author="Christopher Churas",
-    author_email='churas.camera@gmail.com',
-    url='https://github.com/idekerlab/cdiquerygenestoterm',
+    author="Joanna Lenkiewicz",
+    author_email='jlenkiewicz@ucsd.edu',
+    url='https://github.com/idekerlab/test_cyweb_service_app',
     packages=[
-        'cdiquerygenestoterm',
+        'testcywebserviceapp',
     ],
-    package_dir={'cdiquerygenestoterm':
-                 'cdiquerygenestoterm'},
+    package_dir={'testcywebserviceapp':
+                 'testcywebserviceapp'},
     include_package_data=True,
     install_requires=requirements,
     license="BSD license",
     zip_safe=False,
-    keywords='cdiquerygenestoterm',
+    keywords='testcywebserviceapp',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
@@ -57,7 +57,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    scripts=['cdiquerygenestoterm/cdiquerygenestotermcmd.py'],
+    scripts=['testcywebserviceapp/testcywebserviceappcmd.py'],
     test_suite='tests',
     tests_require=test_requirements
 )
