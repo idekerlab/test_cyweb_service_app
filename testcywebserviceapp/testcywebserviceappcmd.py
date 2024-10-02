@@ -4,7 +4,7 @@ import os
 import sys
 import argparse
 import json
-from ndex2.cx2 import RawCX2NetworkFactory
+from ndex2.cx2 import RawCX2NetworkFactory, CX2Network
 
 SOURCES_KEY = 'sources'
 RESULTS_KEY = 'results'
@@ -22,13 +22,30 @@ def _parse_arguments(desc, args):
     help_fm = argparse.ArgumentDefaultsHelpFormatter
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=help_fm)
-    parser.add_argument('network',
-                        help='Network in CX2 format')
-    parser.add_argument('--mode', choices=['UpdateTables'], default='UpdateTables',
-                        help='Mode. Default: UpdateTables.')
+    parser.add_argument('input',
+                        help='Input: network in CX2 format, node data or edge data')
+    parser.add_argument('--mode',
+                        choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection'],
+                        default='updateTables',
+                        help='Mode. Default: updateTables.')
     parser.add_argument('--column_name', default='test_col',
                         help='Column name. Default: test_col.')
     return parser.parse_args(args)
+
+
+def run_add_networks(net_cx2):
+    new_net = CX2Network()
+    new_net.add_network_attribute(key="name", value="New network from: " +
+                                                    net_cx2.get_network_attributes().get("name", ""))
+    node_id1 = new_net.add_node(attributes={"name": "node1"})
+    node_id2 = new_net.add_node(attributes={"name": "node2"})
+    new_net.add_edge(source=node_id1, target=node_id2)
+    return [new_net.to_cx2()]
+
+
+def run_update_network(net_cx2):
+    net_cx2.add_node(attributes={"name": "new_node"})
+    return net_cx2.to_cx2()
 
 
 def run_update_tables(net_cx2, column_name='test_col'):
@@ -45,6 +62,36 @@ def run_update_tables(net_cx2, column_name='test_col'):
     return data
 
 
+def run_update_layouts(net_cx2):
+    layouts_update_data = []
+    test_x = 0
+    test_y = 5
+    test_z = 6
+    for node_id in net_cx2.get_nodes().keys():
+        data = {
+            "id": node_id,
+            "x": test_x,
+            "y": test_y,
+            "z": test_z
+        }
+        layouts_update_data.append(data)
+    return layouts_update_data
+
+
+def run_update_selection(net_cx2):
+    data = {
+      "nodes": list(net_cx2.get_nodes())[:3],
+      "edges": list(net_cx2.get_nodes())[:2]
+    }
+    return data
+
+
+def get_cx2_net_from_input(input_path):
+    net_cx2_path = os.path.abspath(input_path)
+    factory = RawCX2NetworkFactory()
+    return factory.get_cx2network(net_cx2_path)
+
+
 def main(args):
     """
     Main entry point for program
@@ -54,38 +101,27 @@ def main(args):
     :rtype: int
     """
     desc = """
-        Running gene enrichment against Integrated Query
-
-        Takes file with comma delimited list of genes as input and
-        uses Integrated Query (iQuery) enrichment service to 
-        to find best network that best matches query genes. The
-        best network is the one with highest similarity score.
-        This tool then uses the network name as the term name.
-        
-        The result is sent to standard out in JSON format 
-        as follows:
-        
-        {
-         "name":"<TERM NAME WHICH IS NAME OF NETWORK>",
-         "source":"<SOURCE OF NETWORK>",
-         "p_value":<PVALUE>,
-         "description":"<URL OF NETWORK IN NDEx>",
-         "term_size":<NUMBER OF NODES IN NETWORK>,
-         "intersections":["<LIST OF FOUND IN NETWORK>"]
-        }
-        
-        NOTE: term_size is set to number of nodes in network
-              and NOT number of genes
+    TODO
     """
 
     theargs = _parse_arguments(desc, args[1:])
     try:
         theres = None
-        if theargs.mode == 'UpdateTables':
-            net_cx2_path = os.path.abspath(theargs.network)
-            factory = RawCX2NetworkFactory()
-            net_cx2 = factory.get_cx2network(net_cx2_path)
+        if theargs.mode == 'updateTables':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name)
+        elif theargs.mode == 'addNetworks':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
+            theres = run_add_networks(net_cx2)
+        elif theargs.mode == 'updateNetwork':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
+            theres = run_update_network(net_cx2)
+        elif theargs.mode == 'updateLayouts':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
+            theres = run_update_layouts(net_cx2)
+        elif theargs.mode == 'updateSelection':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
+            theres = run_update_selection(net_cx2)
 
         if theres is None:
             sys.stderr.write('No results\n')
