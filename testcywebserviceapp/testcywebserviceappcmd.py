@@ -25,28 +25,13 @@ def _parse_arguments(desc, args):
     parser.add_argument('network',
                         help='Network in CX2 format')
     parser.add_argument('--mode', choices=['UpdateTables'], default='UpdateTables',
-                        help='Mode')
-    parser.add_argument('--url', default='http://public.ndexbio.org',
-                        help='Endpoint of REST service')
-    parser.add_argument('--polling_interval', default=1,
-                        type=float, help='Time in seconds to'
-                                         'wait between '
-                                         'checks on task '
-                                         'completion')
-    parser.add_argument('--timeout', default=30,
-                        type=int, help='Timeout for http '
-                                       'requests in seconds')
-    parser.add_argument('--retrycount', default=180, type=int,
-                        help='Number times to check for completed'
-                             'request. Take this value times'
-                             'the --polling_interval to determine'
-                             'how long this tool will wait'
-                             'for a completed result')
+                        help='Mode. Default: UpdateTables.')
+    parser.add_argument('--column_name', default='test_col',
+                        help='Column name. Default: test_col.')
     return parser.parse_args(args)
 
 
-def run_update_tables(net_cx2):
-    column_name = 'test_col'
+def run_update_tables(net_cx2, column_name='test_col'):
     col_update_data = {}
     for node_id in net_cx2.get_nodes().keys():
         col_update_data[node_id] = {column_name: "test_val"}
@@ -100,7 +85,7 @@ def main(args):
             net_cx2_path = os.path.abspath(theargs.network)
             factory = RawCX2NetworkFactory()
             net_cx2 = factory.get_cx2network(net_cx2_path)
-            theres = run_update_tables(net_cx2=net_cx2)
+            theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name)
 
         if theres is None:
             sys.stderr.write('No results\n')
