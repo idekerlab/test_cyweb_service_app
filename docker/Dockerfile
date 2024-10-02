@@ -8,5 +8,5 @@ RUN pip install /tmp/testcywebserviceapp/testcywebserviceapp*whl
 
 RUN rm -rf /tmp/testcywebserviceapp
 
-ENTRYPOINT ["/opt/conda/bin/testcywebserviceapp.py"]
+ENTRYPOINT ["/opt/conda/bin/testcywebserviceappcmd.py"]
 CMD ["--help"]

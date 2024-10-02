@@ -19,7 +19,7 @@ with open(os.path.join('testcywebserviceapp', '__init__.py')) as ver_file:
             version=re.sub("'", "", line[line.index("'"):])
 
 requirements = [
-    'requests'
+    'ndex2'
 ]
 
 test_requirements = [
