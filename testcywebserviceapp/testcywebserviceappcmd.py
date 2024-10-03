@@ -23,13 +23,15 @@ def _parse_arguments(desc, args):
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=help_fm)
     parser.add_argument('input',
-                        help='Input: network in CX2 format, node data or edge data')
+                        help='Input: network in CX2 format, node data or edge data.')
     parser.add_argument('--mode',
                         choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection'],
                         default='updateTables',
                         help='Mode. Default: updateTables.')
     parser.add_argument('--column_name', default='test_col',
                         help='Column name. Default: test_col.')
+    parser.add_argument('--apply_to_edges', action='store_true',
+                        help='Applies action on edges instead of nodes.')
     return parser.parse_args(args)
 
 
@@ -48,13 +50,14 @@ def run_update_network(net_cx2):
     return net_cx2.to_cx2()
 
 
-def run_update_tables(net_cx2, column_name='test_col'):
+def run_update_tables(net_cx2, column_name='test_col', aspect="nodes"):
     col_update_data = {}
-    for node_id in net_cx2.get_nodes().keys():
-        col_update_data[node_id] = {column_name: "test_val"}
+    aspect_keys = net_cx2.get_nodes().keys() if aspect == "nodes" else net_cx2.get_edges().keys()
+    for aspect_id in aspect_keys:
+        col_update_data[aspect_id] = {column_name: "test_val"}
     data = [
         {
-            "id": "nodes",
+            "id": aspect,
             "columns": [{"id": column_name, "type": "string"}],
             "rows": col_update_data
         }
@@ -80,8 +83,8 @@ def run_update_layouts(net_cx2):
 
 def run_update_selection(net_cx2):
     data = {
-      "nodes": list(net_cx2.get_nodes())[:3],
-      "edges": list(net_cx2.get_nodes())[:2]
+        "nodes": list(net_cx2.get_nodes())[:3],
+        "edges": list(net_cx2.get_nodes())[:2]
     }
     return data
 
@@ -109,7 +112,8 @@ def main(args):
         theres = None
         if theargs.mode == 'updateTables':
             net_cx2 = get_cx2_net_from_input(theargs.input)
-            theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name)
+            aspect = "edges" if theargs.apply_to_edges else "nodes"
+            theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name, aspect=aspect)
         elif theargs.mode == 'addNetworks':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = run_add_networks(net_cx2)
