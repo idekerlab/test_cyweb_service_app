@@ -2,8 +2,10 @@
 
 import os
 import sys
+import time
 import argparse
 import json
+import random
 from ndex2.cx2 import RawCX2NetworkFactory, CX2Network
 
 SOURCES_KEY = 'sources'
@@ -28,10 +30,32 @@ def _parse_arguments(desc, args):
                         choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection'],
                         default='updateTables',
                         help='Mode. Default: updateTables.')
+    parser.add_argument('--input_type', default='network', choices=['network', 'edges', 'nodes'],
+                        help='Denotes format of input file passed in')
     parser.add_argument('--column_name', default='test_col',
                         help='Column name. Default: test_col.')
     parser.add_argument('--apply_to_edges', action='store_true',
                         help='Applies action on edges instead of nodes.')
+    parser.add_argument('--sleep_time', type=int, default=1,
+                        help='Number of seconds to wait before returning a result')
+    parser.add_argument('--error_message',
+                        help='If set, job should fail and return this error message to standard error')
+    parser.add_argument('--min_x_layoutcoord', default=-1000.0, type=float,
+                        help='Sets minimum range for random x coordinates for updateLayouts')
+    parser.add_argument('--max_x_layoutcoord', default=1000.0, type=float,
+                        help='Sets maximum range for random x coordinates for updateLayouts')
+    parser.add_argument('--min_y_layoutcoord', default=-1000.0, type=float,
+                        help='Sets minimum range for random y coordinates for updateLayouts')
+    parser.add_argument('--max_y_layoutcoord', default=1000.0, type=float,
+                        help='Sets maximum range for random y coordinates for updateLayouts')
+    parser.add_argument('--min_z_layoutcoord', default=-1000.0, type=float,
+                        help='Sets minimum range for random z coordinates for updateLayouts')
+    parser.add_argument('--max_z_layoutcoord', default=1000.0, type=float,
+                        help='Sets maximum range for random z coordinates for updateLayouts')
+    parser.add_argument('--include_zcoord', action='store_true',
+                        help="If set, include z coordinate for when generating layout coordinates for updateLayouts")
+    parser.add_argument('--random_seed', default=time.time(), type=float,
+                        help='Seed for random number generator')
     return parser.parse_args(args)
 
 
@@ -65,27 +89,42 @@ def run_update_tables(net_cx2, column_name='test_col', aspect="nodes"):
     return data
 
 
-def run_update_layouts(net_cx2):
+def run_update_layouts(net_cx2, include_z=False, min_x=-1000.0,
+                       max_x=1000.0, min_y=-1000.0, max_y=1000.0,
+                       min_z=-1000.0, max_z=1000.0):
+    """
+    Generate random layout coordinates for x and y (z if include_z is set to True)
+
+    """
     layouts_update_data = []
-    test_x = 0
-    test_y = 5
-    test_z = 6
     for node_id in net_cx2.get_nodes().keys():
         data = {
             "id": node_id,
-            "x": test_x,
-            "y": test_y,
-            "z": test_z
+            "x": round(random.uniform(min_x, max_x), 4),
+            "y": round(random.uniform(min_y, max_y), 4)
         }
+        if include_z is True:
+            data['z'] = round(random.uniform(min_z, max_z), 4)
+
         layouts_update_data.append(data)
     return layouts_update_data
 
+def get_unique_random_choices_from_list(thelist, num_choices):
+    if num_choices >= len(thelist):
+        return thelist
+    picked_choices = set(random.choices(thelist, k=num_choices))
+    while len(picked_choices) < num_choices:
+        picked_choices.add(random.choice(thelist))
+    return list(picked_choices)
 
-def run_update_selection(net_cx2):
+def run_update_selection(net_cx2, num_nodes=3, num_edges=2):
+    node_list = list(net_cx2.get_nodes())
+    edge_list = list(net_cx2.get_edges())
     data = {
-        "nodes": list(net_cx2.get_nodes())[:3],
-        "edges": list(net_cx2.get_nodes())[:2]
+        'nodes': get_unique_random_choices_from_list(node_list, num_nodes),
+        'edges': get_unique_random_choices_from_list(edge_list, num_edges)
     }
+
     return data
 
 
@@ -110,6 +149,17 @@ def main(args):
     theargs = _parse_arguments(desc, args[1:])
     try:
         theres = None
+
+        # sleep amount of time designated
+        time.sleep(theargs.sleep_time)
+
+        sys.stderr.write('Setting random seed to: ' + str(theargs.random_seed) +'\n')
+        random.seed(theargs.random_seed)
+        if theargs.error_message is not None:
+            sys.stderr.write(theargs.error_message)
+            sys.stderr.flush()
+            return 1
+
         if theargs.mode == 'updateTables':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             aspect = "edges" if theargs.apply_to_edges else "nodes"
@@ -122,7 +172,14 @@ def main(args):
             theres = run_update_network(net_cx2)
         elif theargs.mode == 'updateLayouts':
             net_cx2 = get_cx2_net_from_input(theargs.input)
-            theres = run_update_layouts(net_cx2)
+            theres = run_update_layouts(net_cx2,
+                                        min_x=theargs.min_x_layoutcoord,
+                                        max_x=theargs.max_x_layoutcoord,
+                                        min_y=theargs.min_y_layoutcoord,
+                                        max_y=theargs.max_y_layoutcoord,
+                                        min_z=theargs.min_z_layoutcoord,
+                                        max_z=theargs.max_z_layoutcoord,
+                                        include_z=theargs.include_zcoord)
         elif theargs.mode == 'updateSelection':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = run_update_selection(net_cx2)
@@ -132,9 +189,12 @@ def main(args):
         else:
             json.dump(theres, sys.stdout, indent=2)
         sys.stdout.flush()
+        sys.stderr.flush()
+
         return 0
     except Exception as e:
         sys.stderr.write('Caught exception: ' + str(e))
+        sys.stderr.flush()
         return 2
 
 
