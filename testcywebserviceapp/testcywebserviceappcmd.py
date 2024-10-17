@@ -187,7 +187,9 @@ def main(args):
         if theres is None:
             sys.stderr.write('No results\n')
         else:
-            json.dump(theres, sys.stdout, indent=2)
+            newres = [{ 'action': theargs.mode,
+                       'data': theres}]
+            json.dump(newres, sys.stdout, indent=2)
         sys.stdout.flush()
         sys.stderr.flush()
 
