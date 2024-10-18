@@ -30,7 +30,7 @@ def _parse_arguments(desc, args):
                         choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection'],
                         default='updateTables',
                         help='Mode. Default: updateTables.')
-    parser.add_argument('--input_type', default='network', choices=['network', 'edges', 'nodes'],
+    parser.add_argument('--input_type', default='network', choices=['network', 'edge', 'node'],
                         help='Denotes format of input file passed in')
     parser.add_argument('--column_name', default='test_col',
                         help='Column name. Default: test_col.')
@@ -74,9 +74,9 @@ def run_update_network(net_cx2):
     return net_cx2.to_cx2()
 
 
-def run_update_tables(net_cx2, column_name='test_col', aspect="nodes"):
+def run_update_tables(net_cx2, column_name='test_col', aspect="node"):
     col_update_data = {}
-    aspect_keys = net_cx2.get_nodes().keys() if aspect == "nodes" else net_cx2.get_edges().keys()
+    aspect_keys = net_cx2.get_nodes().keys() if aspect == "node" else net_cx2.get_edges().keys()
     for aspect_id in aspect_keys:
         col_update_data[aspect_id] = {column_name: "test_val"}
     data = [
@@ -162,7 +162,7 @@ def main(args):
 
         if theargs.mode == 'updateTables':
             net_cx2 = get_cx2_net_from_input(theargs.input)
-            aspect = "edges" if theargs.apply_to_edges else "nodes"
+            aspect = "edge" if theargs.apply_to_edges else "node"
             theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name, aspect=aspect)
         elif theargs.mode == 'addNetworks':
             net_cx2 = get_cx2_net_from_input(theargs.input)
