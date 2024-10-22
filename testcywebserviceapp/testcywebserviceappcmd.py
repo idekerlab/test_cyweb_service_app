@@ -79,13 +79,12 @@ def run_update_tables(net_cx2, column_name='test_col', aspect="node"):
     aspect_keys = net_cx2.get_nodes().keys() if aspect == "node" else net_cx2.get_edges().keys()
     for aspect_id in aspect_keys:
         col_update_data[aspect_id] = {column_name: "test_val"}
-    data = [
-        {
+    data = {
             "id": aspect,
             "columns": [{"id": column_name, "type": "string"}],
             "rows": col_update_data
-        }
-    ]
+           }
+
     return data
 
 
