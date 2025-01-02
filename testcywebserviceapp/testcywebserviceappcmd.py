@@ -27,7 +27,8 @@ def _parse_arguments(desc, args):
     parser.add_argument('input',
                         help='Input: network in CX2 format, node data or edge data.')
     parser.add_argument('--mode',
-                        choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection'],
+                        choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection',
+                                 'openURL'],
                         default='updateTables',
                         help='Mode. Default: updateTables.')
     parser.add_argument('--input_type', default='network', choices=['network', 'edge', 'node'],
@@ -56,6 +57,10 @@ def _parse_arguments(desc, args):
                         help="If set, include z coordinate for when generating layout coordinates for updateLayouts")
     parser.add_argument('--random_seed', default=time.time(), type=float,
                         help='Seed for random number generator')
+    parser.add_argument('--openurl', default='https://ndexbio.org',
+                        help='URL to open with openURL mode')
+    parser.add_argument('--openurltarget',
+                        help='If set, open url in iframe on right side of Cytoscape Web')
     return parser.parse_args(args)
 
 
@@ -126,6 +131,14 @@ def run_update_selection(net_cx2, num_nodes=3, num_edges=2):
 
     return data
 
+def run_openurl(input, openurl=None, openurltarget=None):
+    """
+    For now just ignore input and
+    """
+    data = {'url': str(openurl),
+            'target': openurltarget}
+    return data
+
 
 def get_cx2_net_from_input(input_path):
     net_cx2_path = os.path.abspath(input_path)
@@ -150,6 +163,7 @@ def main(args):
         theres = None
 
         # sleep amount of time designated
+        sys.stderr.write('Sleeping ' + str(theargs.sleep_time) + ' seconds.\n')
         time.sleep(theargs.sleep_time)
 
         sys.stderr.write('Setting random seed to: ' + str(theargs.random_seed) +'\n')
@@ -182,6 +196,9 @@ def main(args):
         elif theargs.mode == 'updateSelection':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = run_update_selection(net_cx2)
+        elif theargs.mode == 'openURL':
+            theres = run_openurl(theargs.input, openurl=theargs.openurl,
+                                 openurltarget=theargs.openurltarget)
 
         if theres is None:
             sys.stderr.write('No results\n')
