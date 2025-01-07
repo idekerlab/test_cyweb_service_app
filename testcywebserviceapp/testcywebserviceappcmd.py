@@ -59,8 +59,9 @@ def _parse_arguments(desc, args):
                         help='Seed for random number generator')
     parser.add_argument('--openurl', default='https://ndexbio.org',
                         help='URL to open with openURL mode')
-    parser.add_argument('--openurltarget',
-                        help='If set, open url in iframe on right side of Cytoscape Web')
+    parser.add_argument('--openurltarget', default='none',
+                        help='If set to value other then empty string, whitespace, or "none", '
+                             'open url in iframe on right side of Cytoscape Web')
     return parser.parse_args(args)
 
 
@@ -135,8 +136,11 @@ def run_openurl(input, openurl=None, openurltarget=None):
     """
     For now just ignore input and
     """
+    targetval = None
+    if openurltarget is not None and len(openurltarget.strip()) > 0 and openurltarget.lower() != 'none':
+        targetval = openurltarget
     data = {'url': str(openurl),
-            'target': openurltarget}
+            'target': targetval}
     return data
 
 
