@@ -28,16 +28,18 @@ def _parse_arguments(desc, args):
                         help='Input: network in CX2 format, node data or edge data.')
     parser.add_argument('--mode',
                         choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection',
-                                 'openURL'],
+                                 'openURL', 'updatelayoutandselection'],
                         default='updateTables',
                         help='Mode. Default: updateTables.')
     parser.add_argument('--input_type', default='network', choices=['network', 'edge', 'node'],
                         help='Denotes format of input file passed in')
     parser.add_argument('--column_name', default='test_col',
                         help='Column name. Default: test_col.')
+    parser.add_argument('--column_value', default='test_val',
+                        help='Value to put in --column_name column. Used by --mode updateTables')
     parser.add_argument('--apply_to_edges', action='store_true',
                         help='Applies action on edges instead of nodes.')
-    parser.add_argument('--sleep_time', type=int, default=1,
+    parser.add_argument('--sleep_time', type=int, default=0,
                         help='Number of seconds to wait before returning a result')
     parser.add_argument('--error_message',
                         help='If set, job should fail and return this error message to standard error')
@@ -80,11 +82,12 @@ def run_update_network(net_cx2):
     return net_cx2.to_cx2()
 
 
-def run_update_tables(net_cx2, column_name='test_col', aspect="node"):
+def run_update_tables(net_cx2, column_name='test_col', column_value='test_val',
+                      aspect="node"):
     col_update_data = {}
     aspect_keys = net_cx2.get_nodes().keys() if aspect == "node" else net_cx2.get_edges().keys()
     for aspect_id in aspect_keys:
-        col_update_data[aspect_id] = {column_name: "test_val"}
+        col_update_data[aspect_id] = {column_name: str(column_value)}
     data = {
             "id": aspect,
             "columns": [{"id": column_name, "type": "string"}],
@@ -180,7 +183,8 @@ def main(args):
         if theargs.mode == 'updateTables':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             aspect = "edge" if theargs.apply_to_edges else "node"
-            theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name, aspect=aspect)
+            theres = run_update_tables(net_cx2=net_cx2, column_name=theargs.column_name,
+                                       column_value=theargs.column_value, aspect=aspect)
         elif theargs.mode == 'addNetworks':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = run_add_networks(net_cx2)
@@ -203,12 +207,30 @@ def main(args):
         elif theargs.mode == 'openURL':
             theres = run_openurl(theargs.input, openurl=theargs.openurl,
                                  openurltarget=theargs.openurltarget)
+        elif theargs.mode == 'updatelayoutandselection':
+            net_cx2 = get_cx2_net_from_input(theargs.input)
+            theres = [{ 'action': 'updateLayouts',
+                        'data': run_update_layouts(net_cx2,
+                                                   min_x=theargs.min_x_layoutcoord,
+                                                   max_x=theargs.max_x_layoutcoord,
+                                                   min_y=theargs.min_y_layoutcoord,
+                                                   max_y=theargs.max_y_layoutcoord,
+                                                   min_z=theargs.min_z_layoutcoord,
+                                                   max_z=theargs.max_z_layoutcoord,
+                                                   include_z=theargs.include_zcoord)},
+                      { 'action': 'updateSelection',
+                        'data': run_update_selection(net_cx2)}]
 
         if theres is None:
             sys.stderr.write('No results\n')
         else:
-            newres = [{ 'action': theargs.mode,
-                       'data': theres}]
+            # special case if updatelayoutandselection just return the value
+            # since that call already adds in an action
+            if theargs.mode == 'updatelayoutandselection':
+                newres = theres
+            else:
+                newres = [{'action': theargs.mode,
+                           'data': theres}]
             json.dump(newres, sys.stdout, indent=2)
         sys.stdout.flush()
         sys.stderr.flush()
