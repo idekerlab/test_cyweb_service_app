@@ -1,8 +1,10 @@
 ===================================================
-Community Detection iQuery Gene To Term Mapper
+Example CytoContainer Docker App
 ===================================================
 
-This repository creates a CDAPS compatible functional enrichment Docker image using `iQuery service <http://ndexbio.org/iquery>`_
+Contains a code to build a Docker container that has several sample
+Cytoscape Service Apps that are meant to be incorporated into a running
+`CytoscapeContainer REST Service <https://github.com/cytoscape/cytocontainer-rest-server>`__
 
 Dependencies
 ------------
@@ -14,11 +16,9 @@ Dependencies
 Direct invocation
 ------------------
 
-Version `0.1.0` can be directly pulled from `Dockerhub <https://hub.docker.com/>`_ with this command:
-
 .. code-block::
 
-   docker pull coleslawndex/testcywebserviceapp:0.1.0
+   docker run --rm -v `pwd`:`pwd` coleslawndex/testcywebserviceapp:0.9.0 -h
 
 Building
 --------
@@ -62,7 +62,7 @@ Usage
 
 .. code-block::
 
-   docker run -v coleslawndex/testcywebserviceapp:0.1.0 -h
+   docker run -v coleslawndex/testcywebserviceapp:0.9.0 -h
 
 
 Credits
