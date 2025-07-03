@@ -6,6 +6,7 @@ import time
 import argparse
 import json
 import random
+import math
 from ndex2.cx2 import RawCX2NetworkFactory, CX2Network
 
 SOURCES_KEY = 'sources'
@@ -28,9 +29,11 @@ def _parse_arguments(desc, args):
                         help='Input: network in CX2 format, node data or edge data.')
     parser.add_argument('--mode',
                         choices=['updateTables', 'addNetworks', 'updateNetwork', 'updateLayouts', 'updateSelection',
-                                 'openURL', 'updatelayoutandselection'],
-                        default='updateTables',
-                        help='Mode. Default: updateTables.')
+                                 'openURL', 'updatelayoutandselection', 'testprogress'],
+                        help='Mode denotes what result to return at an action level as well as a data level.'
+                             'The special case here is updatelayoutandselection where two actions are put into'
+                             'the output JSON',
+                        default='updateTables')
     parser.add_argument('--input_type', default='network', choices=['network', 'edge', 'node'],
                         help='Denotes format of input file passed in')
     parser.add_argument('--column_name', default='test_col',
@@ -146,6 +149,25 @@ def run_openurl(input, openurl=None, openurltarget=None):
             'target': targetval}
     return data
 
+def run_testprogress(input, openurl=None, openurltarget=None,
+                     sleeptime=1):
+    """
+    For now just ignore input and
+    """
+    targetval = None
+    if openurltarget is not None and len(openurltarget.strip()) > 0 and openurltarget.lower() != 'none':
+        targetval = openurltarget
+    counter = 0
+    while counter < sleeptime:
+        sys.stderr.write('@@MESSAGE Counter ' + str(counter) + '\n')
+        sys.stderr.write('@@PROGRESS ' + str(math.floor(float(counter)/float(sleeptime)*100.0)) + '\n')
+        time.sleep(1)
+        counter = counter + 1
+
+    data = {'url': str(openurl),
+            'target': targetval}
+    return data
+
 
 def get_cx2_net_from_input(input_path):
     net_cx2_path = os.path.abspath(input_path)
@@ -170,10 +192,12 @@ def main(args):
         theres = None
 
         # sleep amount of time designated
-        sys.stderr.write('Sleeping ' + str(theargs.sleep_time) + ' seconds.\n')
-        time.sleep(theargs.sleep_time)
+        sys.stderr.write('@@MESSAGE Sleeping ' + str(theargs.sleep_time) + ' seconds.\n')
+        sys.stderr.write('@@PROGRESS 10\n')
+        if theargs.mode != 'testprogress':
+            time.sleep(theargs.sleep_time)
 
-        sys.stderr.write('Setting random seed to: ' + str(theargs.random_seed) +'\n')
+        sys.stderr.write('@@MESSAGE Setting random seed to: ' + str(theargs.random_seed) +'\n')
         random.seed(theargs.random_seed)
         if theargs.error_message is not None:
             sys.stderr.write(theargs.error_message)
@@ -207,6 +231,11 @@ def main(args):
         elif theargs.mode == 'openURL':
             theres = run_openurl(theargs.input, openurl=theargs.openurl,
                                  openurltarget=theargs.openurltarget)
+        elif theargs.mode == 'testprogress':
+            theargs.mode = 'openURL'
+            theres = run_testprogress(theargs.input, openurl=theargs.openurl,
+                                      openurltarget=theargs.openurltarget,
+                                      sleeptime=theargs.sleep_time)
         elif theargs.mode == 'updatelayoutandselection':
             net_cx2 = get_cx2_net_from_input(theargs.input)
             theres = [{ 'action': 'updateLayouts',
